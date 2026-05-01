@@ -43,9 +43,9 @@ GET /reports/slow                    — SELECT *, full row transfer
 GET /reports/optimized               — SELECT id,name only
 GET /reports/compare                 — Slow vs optimised diff
 
-GET /reports/slow-with-explain       — Slow query + MySQL EXPLAIN
-GET /reports/optimized-with-explain  — Optimised query + MySQL EXPLAIN
-GET /reports/compare-with-explain    — Full comparison: timing + EXPLAIN + improvement %
+GET /reports/slowwithexplain       — Slow query + MySQL EXPLAIN
+GET /reports/optimizedwithexplain  — Optimised query + MySQL EXPLAIN
+GET /reports/comparewithexplain    — Full comparison: timing + EXPLAIN + improvement %
 
 GET /reports/cached-with-explain     — DB hit vs Redis cache hit, three-tier diff
 ```
@@ -54,7 +54,7 @@ GET /reports/cached-with-explain     — DB hit vs Redis cache hit, three-tier d
 
 ## Sample responses
 
-### `/compare-with-explain`
+### `/comparewithexplain`
 ```json
 {
     "slow": {
@@ -195,7 +195,7 @@ php artisan db:seed --class=ReportsSeeder
 php artisan serve
 
 # Test
-curl http://localhost:8000/reports/compare-with-explain
+curl http://localhost:8000/reports/comparewithexplain
 curl http://localhost:8000/reports/cached-with-explain
 ```
 
@@ -208,6 +208,5 @@ curl http://localhost:8000/reports/cached-with-explain
 - Reading MySQL `EXPLAIN` output — `rows`, `key`, `type` fields
 - Batch seeding 50,000 rows in chunks of 1,000 to avoid memory exhaustion
 - Modular Laravel structure for production-grade code organisation
-
 
 *[Kapil Sharma](https://linkedin.com/in/kapil-sharma-7665a7b0) · [GitHub](https://github.com/kapilsharma138)*
