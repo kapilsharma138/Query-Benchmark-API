@@ -106,6 +106,8 @@ GET /reports/cached-with-explain     — DB hit vs Redis cache hit, three-tier d
 }
 ```
 
+
+![alt text](image.png)
 ---
 
 ## How it works
