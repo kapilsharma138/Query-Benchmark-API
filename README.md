@@ -209,17 +209,4 @@ curl http://localhost:8000/reports/cached-with-explain
 - Batch seeding 50,000 rows in chunks of 1,000 to avoid memory exhaustion
 - Modular Laravel structure for production-grade code organisation
 
----
-
-## Next
-
-- [ ] Composite index demo — `(name, status)` vs two separate indexes, measured difference
-- [ ] Cache invalidation strategy — when and how to bust cache correctly
-- [ ] Deploy to AWS EC2 + RDS — live public URL
-
----
-
-*Part of a backend engineering portfolio.*
-*Next: Job Alert Bot (Laravel + AWS Lambda + Telegram) · CV–JD Matcher (Laravel CLI + PHPUnit)*
-
 *[Kapil Sharma](https://linkedin.com/in/kapil-sharma-7665a7b0) · [GitHub](https://github.com/kapilsharma138)*
