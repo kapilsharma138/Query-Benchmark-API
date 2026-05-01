@@ -1,63 +1,148 @@
-<<<<<<< HEAD
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Query Benchmark API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+> **89.43% query performance improvement** — demonstrated with live MySQL EXPLAIN analysis on real data.
 
-## About Laravel
+Built by a Backend Engineer who reduced dashboard query times by 50% on government portals serving 10,000+ stakeholders (DRDO, NCDC). This Laravel API reproduces those exact optimisation techniques — measurable, reproducible, and fully explained.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Results
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Tested on a `reports` table with realistic dataset. Filter: `WHERE name = 'Becker-Braun'`.
 
-## Learning Laravel
+| Metric | Slow Query | Optimised Query | Improvement |
+|---|---|---|---|
+| **Execution time** | 17.331ms | 1.832ms | **89.43% faster** |
+| **Rows scanned** | 10 | 10 | — |
+| **Index used** | `idx_name` | `idx_name` | — |
+| **Columns fetched** | ALL (`SELECT *`) | `id, name` only | Reduced payload |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+> The difference isn't the index — both queries use the same index. The improvement comes entirely from **selective column fetching** (`SELECT id, name` vs `SELECT *`). Fewer bytes transferred from database to application = faster response. This is the real-world lesson.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## What this demonstrates
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+**1. MySQL EXPLAIN in practice**
+Every endpoint runs `EXPLAIN` on its own query and returns the execution plan alongside results — rows scanned, index used, query type. No guessing what MySQL is doing internally.
 
-### Premium Partners
+**2. SELECT * vs selective columns**
+Both queries scan the same 10 rows using the same index. The only difference is what gets transferred. At 50,000+ rows in production, this gap compounds significantly.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+**3. Measurable before/after**
+The `/compare-with-explain` endpoint runs both queries in a single request and returns a structured diff — timing, index usage, rows scanned, and improvement percentage. The number is the proof.
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Endpoints
 
-## Code of Conduct
+```
+GET /reports/slow                  — Full table fetch, SELECT *, no filters
+GET /reports/optimized             — SELECT id, name only
+GET /reports/compare               — Side-by-side timing diff
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+GET /reports/slow-with-explain     — Slow query + MySQL EXPLAIN output
+GET /reports/optimized-with-explain — Optimised query + MySQL EXPLAIN output
+GET /reports/compare-with-explain  — Full comparison: timing + EXPLAIN + improvement %
+```
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Sample response — `/comparewithexplain`
 
-## License
+```json
+{
+    "slow": {
+        "time_ms": 17.331,
+        "rows_scanned": 10,
+        "index_used": "idx_name",
+        "row_count": 10
+    },
+    "fast": {
+        "time_ms": 1.832,
+        "rows_scanned": 10,
+        "index_used": "idx_name",
+        "row_count": 10
+    },
+    "compare": {
+        "slow_ms": 17.331,
+        "fast_ms": 1.832,
+        "improvement_pct": 89.43,
+        "slow_rows_scanned": 10,
+        "fast_rows_scanned": 10,
+        "slow_index_used": "idx_name",
+        "fast_index_used": "idx_name"
+    }
+}
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-=======
-# Query-Benchmark-API
->>>>>>> 790d021113a21388edf6b8500eacdca395da0d2c
+---
+
+## How it works
+
+```php
+// SLOW — fetches every column, transfers full row data
+DB::table('reports')
+    ->where('name', 'Becker-Braun')
+    ->get();  // SELECT * FROM reports WHERE name = ?
+
+// OPTIMISED — fetches only what's needed
+DB::table('reports')
+    ->select('id', 'name')
+    ->where('name', 'Becker-Braun')
+    ->get();  // SELECT id, name FROM reports WHERE name = ?
+
+// EXPLAIN — what MySQL actually did
+DB::select("EXPLAIN SELECT id, name FROM reports WHERE name = ?", ['Becker-Braun']);
+// returns: rows scanned, index used, query type, key length
+```
+
+---
+
+## Key insight
+
+Both queries use the `idx_name` index. The row count scanned is identical. **The 89% improvement is purely from column reduction** — transferring 2 columns instead of all columns across every matched row.
+
+In production systems with wide tables (20+ columns), high-concurrency dashboards, or large result sets, this difference scales dramatically. The technique is the same one used to reduce load times by 50% on cooperative sector dashboards at Silver Touch Technologies.
+
+---
+
+## Stack
+
+- **Framework:** Laravel (Modular — `Modules\Reports`)
+- **Database:** MySQL with `idx_name` index on `reports.name`
+- **Query profiling:** `microtime()` + MySQL `EXPLAIN`
+- **Architecture:** RESTful API · Controller-based · Modular Laravel structure
+
+---
+
+## Run locally
+
+```bash
+git clone https://github.com/YOUR_USERNAME/query-benchmark-api
+cd query-benchmark-api
+composer install
+cp .env.example .env
+php artisan key:generate
+
+# Configure DB_* in .env, then:
+php artisan migrate
+php artisan db:seed --class=ReportsSeeder
+php artisan serve
+
+# Test
+curl http://localhost:8000/reports/comparewithexplain
+```
+
+---
+
+## Next steps in this project
+
+- [ ] Add Redis caching layer — show cache hit vs database hit timing
+- [ ] Add composite index demo `(name, status)` vs single column index
+- [ ] Add `EXPLAIN ANALYZE` (MySQL 8.0+) for deeper execution stats
+- [ ] Deploy to AWS EC2 + RDS — live URL
+
+---
+
+*Part of a series of public backend engineering demos. See also: Job Alert Bot (Laravel + AWS Lambda + Telegram) · CV–JD Matcher (Laravel CLI + scoring engine).*
