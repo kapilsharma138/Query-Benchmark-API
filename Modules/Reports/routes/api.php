@@ -3,8 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Reports\Http\Controllers\ReportsController;
 
-// Route::get('/slow',[ReportsController::class, 'slow']);
-// Route::get('/optimized',[ReportsController::class, 'optimized']);
 Route::get('/compare',[ReportsController::class, 'compare']);
 
 Route::get('/slowwithexplain',[ReportsController::class, 'slowwithexplain']);
