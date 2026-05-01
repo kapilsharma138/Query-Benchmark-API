@@ -197,8 +197,8 @@ php artisan db:seed --class=ReportsSeeder
 php artisan serve
 
 # Test
-curl http://localhost:8000/reports/comparewithexplain
-curl http://localhost:8000/reports/cached-with-explain
+curl http://13.203.229.215/api/comparewithexplain
+curl http://13.203.229.215/api/cached-with-explain
 ```
 
 ---
