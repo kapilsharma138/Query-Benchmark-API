@@ -209,4 +209,5 @@ curl http://localhost:8000/reports/cached-with-explain
 - Batch seeding 50,000 rows in chunks of 1,000 to avoid memory exhaustion
 - Modular Laravel structure for production-grade code organisation
 
+
 *[Kapil Sharma](https://linkedin.com/in/kapil-sharma-7665a7b0) · [GitHub](https://github.com/kapilsharma138)*
