@@ -119,7 +119,7 @@ In production systems with wide tables (20+ columns), high-concurrency dashboard
 ## Run locally
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/query-benchmark-api
+git clone https://github.com/kapilsharma138/query-benchmark-api
 cd query-benchmark-api
 composer install
 cp .env.example .env
