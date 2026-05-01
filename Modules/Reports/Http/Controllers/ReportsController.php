@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use DB;
 
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\JsonResponse;
+
 class ReportsController extends Controller
 {
     public function slow()
@@ -115,6 +118,66 @@ class ReportsController extends Controller
                 'fast_rows_scanned' => $fastResult['rows_scanned'],
                 'slow_index_used' => $slowResult['index_used'],
                 'fast_index_used' => $fastResult['index_used'],
+            ],
+        ]);
+    }
+
+    public function cachedWithExplain()
+    {
+        $cacheKey = 'benchmark:reports:becker-braun';
+
+        // ── FIRST CALL SIMULATION (fresh — no cache) ──────────────────
+        Cache::forget($cacheKey); // clear so we can measure DB hit fresh
+
+        $dbStart = microtime(true);
+        $dbResult = Cache::remember($cacheKey, 300, function () {
+            return DB::table('reports')
+                ->select('id', 'name')
+                ->where('name', 'Becker-Braun')
+                ->get()
+                ->toArray();
+        });
+        $dbTime = round((microtime(true) - $dbStart) * 1000, 3);
+
+        $explain = DB::select("EXPLAIN SELECT id, name FROM reports WHERE name = 'Becker-Braun'");
+
+        // ── SECOND CALL SIMULATION (cache hit) ────────────────────────
+        $cacheStart = microtime(true);
+        $cachedResult = Cache::remember($cacheKey, 300, function () {
+            return DB::table('reports')
+                ->select('id', 'name')
+                ->where('name', 'Becker-Braun')
+                ->get()
+                ->toArray();
+        });
+        $cacheTime = round((microtime(true) - $cacheStart) * 1000, 3);
+
+        // ── IMPROVEMENT CALCULATIONS ──────────────────────────────────
+        $slowMs     = 17.331; // your real slow baseline from earlier
+        $vsSlowPct  = round((($slowMs - $cacheTime) / $slowMs) * 100, 2);
+        $vsFastPct  = round((($dbTime - $cacheTime) / $dbTime) * 100, 2);
+
+        return response()->json([
+            'first_call' => [
+                'served_from'  => 'database',
+                'time_ms'      => $dbTime,
+                'rows'         => count($dbResult),
+                'index_used'   => $explain[0]->key ?? 'none',
+                'rows_scanned' => $explain[0]->rows,
+            ],
+            'second_call' => [
+                'served_from'      => 'redis_cache',
+                'time_ms'          => $cacheTime,
+                'rows'             => count($cachedResult),
+                'cache_ttl_seconds'=> 300,
+            ],
+            'compare' => [
+                'slow_baseline_ms'        => $slowMs,
+                'db_optimised_ms'         => $dbTime,
+                'redis_cached_ms'         => $cacheTime,
+                'cache_vs_db_improvement' => $vsFastPct . '%',
+                'cache_vs_slow_improvement' => $vsSlowPct . '%',
+                'summary' => "Redis cache is {$vsFastPct}% faster than optimised DB, and {$vsSlowPct}% faster than the slow baseline",
             ],
         ]);
     }
