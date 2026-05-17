@@ -40,7 +40,7 @@ class ReportsController extends Controller
     }
     
     public function compare()
-    {     
+    {
         $slowResult  = $this->slow();
         $fastResult  = $this->optimized();
 
@@ -52,7 +52,6 @@ class ReportsController extends Controller
 
         return $compare;
     }
-
 
     public function slowwithexplain()
     {
@@ -180,6 +179,48 @@ class ReportsController extends Controller
                 'summary' => "Redis cache is {$vsFastPct}% faster than optimised DB, and {$vsSlowPct}% faster than the slow baseline",
             ],
         ]);
+    }
+
+    public function slowusepaginate()
+    {
+        $slowstart = microtime(true);
+        $slowquery = DB::table('reports')->select('id', 'name')->get()->toArray();
+        $slowelapsed = (microtime(true) - $slowstart) * 1000; // ms
+
+        $slowresult = [
+            "time_taken" => $slowelapsed,
+            "row_count" => $slowquery,
+        ];
+
+        return $slowresult;
+    }
+
+    public function optimizedusepaginate()
+    {
+        $faststart = microtime(true);
+        $optimizedquery = DB::table('reports')->select('id', 'name')->paginate(25)->toArray();
+        $fastelapsed = (microtime(true) - $faststart) * 1000; // ms
+
+        $fastresult = [
+            "time_taken" => $fastelapsed,
+            "row_count" => $optimizedquery,
+        ];
+
+        return $fastresult;
+    }
+    
+    public function compareusepaginate()
+    {
+        $slowResult  = $this->slowusepaginate();
+        $fastResult  = $this->optimizedusepaginate();
+
+        $compare = [
+            'slow_ms' => $slowResult['time_taken'], 
+            'fast_ms' => $fastResult['time_taken'],
+            'improvement_pct' => (($slowResult['time_taken'] - $fastResult['time_taken']) / $slowResult['time_taken']) * 100
+        ];
+
+        return $compare;
     }
 
 }
